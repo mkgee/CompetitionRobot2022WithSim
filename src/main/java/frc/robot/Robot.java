@@ -10,8 +10,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 //import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,7 +21,6 @@ import frc.diagnostics.*;
 //import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -67,6 +64,9 @@ public class Robot extends TimedRobot implements ControlMap{
    */
   @Override
   public void robotInit() {
+    // added for sim
+    setNetworkTablesFlushEnabled(true);
+
     Intake.nothing();
     Arms.nothing();
     Chassis.nothing();
@@ -258,6 +258,7 @@ public class Robot extends TimedRobot implements ControlMap{
     Chassis.toggleFastMode(OI.button(0, A_BUTTON));
 
     //added for sim
+    //TODO - start here!
     /*
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
