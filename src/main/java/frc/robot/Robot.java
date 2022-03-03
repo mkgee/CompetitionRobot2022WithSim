@@ -10,6 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 //import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,7 +23,8 @@ import frc.diagnostics.*;
 //import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DigitalInput;
-
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -29,6 +32,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.ArrayList;
 import frc.helpers.*;
 
+import com.revrobotics.REVPhysicsSim;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -55,6 +59,8 @@ public class Robot extends TimedRobot implements ControlMap{
   private DiagnosticsIF[] diagnostics;
   public static ArrayList<CCSparkMax> motors = new ArrayList<CCSparkMax>();
 
+  // added for sim
+  private final Drivetrain m_drive = new Drivetrain();
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -101,7 +107,6 @@ public class Robot extends TimedRobot implements ControlMap{
     }
     //Vision.setPipeline(alliance);
 
-
   }
 
   private long periodicCount;
@@ -130,6 +135,10 @@ public class Robot extends TimedRobot implements ControlMap{
 
     Timer.tick();
     Arms.calibrate();
+
+    // added for sim
+    m_drive.periodic();
+
   }
 //stage deez
   /**
@@ -152,6 +161,8 @@ public class Robot extends TimedRobot implements ControlMap{
     TedBallin.setShoot(1);
     Chassis.reset();
 
+    //TODO - update this for autonomis when a trajectory is defined in robotInit()
+    // m_drive.resetOdometry(pose);
   }
   /**
    * This function is called periodically during autonomous.
@@ -162,6 +173,14 @@ public class Robot extends TimedRobot implements ControlMap{
   public void autonomousPeriodic() {
     if(!timer.triggered()) return;
     if(!Chassis.driveDistPeriodic(3.5, 0.1, 0.5, 0.5, 0)) return;
+
+    // added for sim
+    /**
+    double elapsed = m_timer.get();
+    Trajectory.State reference = m_trajectory.sample(elapsed);
+    ChassisSpeeds speeds = m_ramsete.calculate(m_drive.getPose(), reference);
+    m_drive.drive(speeds.vxMetersPerSecond, speeds.omegaRadiansPerSecond);
+    */
   }
 
   @Override
@@ -238,6 +257,19 @@ public class Robot extends TimedRobot implements ControlMap{
     //Fast Mode Toggle (A)
     Chassis.toggleFastMode(OI.button(0, A_BUTTON));
 
+    //added for sim
+    /*
+    // Get the x speed. We are inverting this because Xbox controllers return
+    // negative values when we push forward.
+    double xSpeed = -m_speedLimiter.calculate(m_controller.getLeftY()) * Drivetrain.kMaxSpeed;
+
+    // Get the rate of angular rotation. We are inverting this because we want a
+    // positive value when we pull to the left (remember, CCW is positive in
+    // mathematics). Xbox controllers return positive values when you pull to
+    // the right by default.
+    double rot = -m_rotLimiter.calculate(m_controller.getRightX()) * Drivetrain.kMaxAngularSpeed;
+    m_drive.drive(xSpeed, rot);
+    */
   }
 
   /**
@@ -256,6 +288,21 @@ public class Robot extends TimedRobot implements ControlMap{
    */
   @Override
   public void testPeriodic() {
+  }
+
+  @Override
+  public void simulationInit() {
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fLeft, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fRight, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bLeft, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bRight, DCMotor.getNEO(1));
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // added for sim
+    REVPhysicsSim.getInstance().run();
+    m_drive.simulationPeriodic();
   }
 
 }
