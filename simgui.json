@@ -1,17 +1,5 @@
 {
   "HALProvider": {
-    "Other Devices": {
-      "SPARK MAX [1]": {
-        "header": {
-          "open": true
-        }
-      },
-      "SPARK MAX [4]": {
-        "header": {
-          "open": true
-        }
-      }
-    },
     "RoboRIO": {
       "6V Rail": {
         "open": true
@@ -27,10 +15,20 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/AnalogGyro[0]": "Gyro",
       "/LiveWindow/Ungrouped/DigitalInput[0]": "Digital Input",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
-      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro"
+      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
+      "/SmartDashboard/Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "image": "/Users/mitch/Desktop/2022-field.png",
+        "window": {
+          "visible": true
+        }
+      }
     }
   }
 }
