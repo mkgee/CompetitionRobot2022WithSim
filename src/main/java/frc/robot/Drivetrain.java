@@ -22,13 +22,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivetrain {
     // 3 meters per second.
-   public static final double kMaxSpeed = 3.0;
-   // 1/2 rotation per second.
-   public static final double kMaxAngularSpeed = Math.PI;
+    public static final double kMaxSpeed = 3.0;
+    // 1/2 rotation per second.
+    public static final double kMaxAngularSpeed = Math.PI;
 
-   private static final double kTrackWidth = 0.381 * 2;
-   private static final double kWheelRadius = 0.0508;
-   private static final int kEncoderResolution = -4096;
+    private static final double kTrackWidth = 0.381 * 2;
+    private static final double kWheelRadius = 0.0508;
+    private static final int kEncoderResolution = -4096;
 
     private final Field2d m_fieldSim = new Field2d();
 
@@ -47,7 +47,7 @@ public class Drivetrain {
     private final RelativeEncoder frontRightEncoder = Chassis.fRight.getAlternateEncoder(countsPerRev);
     private final RelativeEncoder backLeftEncoder = Chassis.bLeft.getAlternateEncoder(countsPerRev);
     private final RelativeEncoder backRightEncoder = Chassis.bRight.getAlternateEncoder(countsPerRev);
-    
+
     private final LinearSystem<N2, N2, N2> m_drivetrainSystem =
       LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
     private final DifferentialDrivetrainSim m_drivetrainSimulator =
@@ -77,6 +77,9 @@ public class Drivetrain {
         double rightOutput =
             m_rightPIDController.calculate(frontRightEncoder.getVelocity(), speeds.rightMetersPerSecond);
 
+        // this is not changing, the method is not being called.
+        // System.out.println("leftOutput=" + leftOutput + ", rightOutput=" + rightOutput);
+
         // m_leftGroup.setVoltage(leftOutput + leftFeedforward);
         // m_rightGroup.setVoltage(rightOutput + rightFeedforward);
         Chassis.driveSpd(leftOutput+leftFeedforward, rightOutput + rightFeedforward);
@@ -89,6 +92,21 @@ public class Drivetrain {
     public void updateOdometry() {
         double leftDistance = frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
         double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
+
+        //debug
+        System.out.println("fLeft encoder: " + frontLeftEncoder.getPosition() +
+        ", fRight encoder: " + frontRightEncoder.getPosition() +
+        ", bLeft encoder: " + backLeftEncoder.getPosition() +
+        ", bRight encoder: " + backRightEncoder.getPosition() 
+        );
+        // System.out.println("position fLeft: " + Chassis.fLeft.getPosition());
+
+        // these values don't change
+        // System.out.println("leftDistance: " + leftDistance + ", rightDistance: " + rightDistance);
+
+        // heading is changing with left joystick moving up/down, because of line 142
+        // System.out.println("heading: " + m_gyro.getRotation2d());
+
         m_odometry.update(m_gyro.getRotation2d(), leftDistance, rightDistance);
     }
 
@@ -106,7 +124,6 @@ public class Drivetrain {
     }
 
      /** Update our simulation. This should be run every robot loop in simulation. */
-     // might not need this for SparkMax....
     public void simulationPeriodic() {
         // To update our simulation, we set motor voltage inputs, update the
         // simulation, and write the simulated positions and velocities to our
@@ -115,16 +132,32 @@ public class Drivetrain {
         // m_drivetrainSimulator.setInputs(
         //     m_leftLeader.get() * RobotController.getInputVoltage(),
         //     -m_rightLeader.get() * RobotController.getInputVoltage());
+        // double voltage = RobotController.getInputVoltage();
+        // this is always 12 volts
+        //System.out.println("voltage="+voltage);
+
+        // this is changing with left joystick
+        // System.out.println(String.format("fLeft: %2.1f, fRight: %2.1f, bLeft: %2.1f, bRight: %2.1f",
+        //     Chassis.fLeft.get(), Chassis.fRight.get(), Chassis.bLeft.get(),Chassis.bRight.get()));
+
+        // m_drivetrainSimulator.setInputs(
+        //     Chassis.fLeft.get() * RobotController.getInputVoltage(),
+        //     -Chassis.fRight.get() * RobotController.getInputVoltage());
         m_drivetrainSimulator.setInputs(
             Chassis.fLeft.get() * RobotController.getInputVoltage(),
-            -Chassis.fRight.get() * RobotController.getInputVoltage());
+            Chassis.fRight.get() * RobotController.getInputVoltage());
         m_drivetrainSimulator.update(0.02);
 
         // m_leftEncoderSim.setDistance(m_drivetrainSimulator.getLeftPositionMeters());
         // m_leftEncoderSim.setRate(m_drivetrainSimulator.getLeftVelocityMetersPerSecond());
         // m_rightEncoderSim.setDistance(m_drivetrainSimulator.getRightPositionMeters());
         // m_rightEncoderSim.setRate(m_drivetrainSimulator.getRightVelocityMetersPerSecond());
+
+        //this changes when left joystick is moved up and down
+        // System.out.println("angle: " + -m_drivetrainSimulator.getHeading().getDegrees());
+
         m_gyroSim.setAngle(-m_drivetrainSimulator.getHeading().getDegrees());
+        
     }
 
     public void periodic() {
