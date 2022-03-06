@@ -247,6 +247,7 @@ public class Robot extends TimedRobot implements ControlMap{
     // if(Math.abs(velocity) < 0.05 && Math.abs(joystick) <= 0.05) {
     //   velocity = 0;
     // }
+    // System.out.println(String.format("velocity: %2.2f, joystick: %2.2f", velocity, joystick));
     if(Math.abs(velocity) < 0.1 && Math.abs(joystick) <= 0.1) {
       velocity = 0;
     }
@@ -317,10 +318,10 @@ public class Robot extends TimedRobot implements ControlMap{
 
   @Override
   public void simulationInit() {
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.fLeft, DCMotor.getCIM(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.fRight, DCMotor.getCIM(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.bLeft, DCMotor.getCIM(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.bRight, DCMotor.getCIM(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fLeft, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fRight, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bLeft, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bRight, DCMotor.getNEO(1));
   }
 
   @Override
