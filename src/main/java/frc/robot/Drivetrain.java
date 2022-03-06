@@ -64,10 +64,10 @@ public class Drivetrain {
         SmartDashboard.putData("Field", m_fieldSim);
     }
 
+    // not used
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
         var leftFeedforward = m_feedforward.calculate(speeds.leftMetersPerSecond);
         var rightFeedforward = m_feedforward.calculate(speeds.rightMetersPerSecond);
-        //TODO - determine how to getRate() from RelativeEncoder, maybe use getVelocity() ?
         // double leftOutput =
         //     m_leftPIDController.calculate(m_leftEncoder.getRate(), speeds.leftMetersPerSecond);
         // double rightOutput =
@@ -85,27 +85,15 @@ public class Drivetrain {
         Chassis.driveSpd(leftOutput+leftFeedforward, rightOutput + rightFeedforward);
     }
 
+    // not used
     public void drive(double xSpeed, double rot) {
         setSpeeds(m_kinematics.toWheelSpeeds((new ChassisSpeeds(xSpeed, 0, rot))));
     }
 
     public void updateOdometry() {
+        // encoders for CANSparkMax don't work in sim mode!
         double leftDistance = frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
         double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
-
-        //debug
-        System.out.println("fLeft encoder: " + frontLeftEncoder.getPosition() +
-        ", fRight encoder: " + frontRightEncoder.getPosition() +
-        ", bLeft encoder: " + backLeftEncoder.getPosition() +
-        ", bRight encoder: " + backRightEncoder.getPosition() 
-        );
-        // System.out.println("position fLeft: " + Chassis.fLeft.getPosition());
-
-        // these values don't change
-        // System.out.println("leftDistance: " + leftDistance + ", rightDistance: " + rightDistance);
-
-        // heading is changing with left joystick moving up/down, because of line 142
-        // System.out.println("heading: " + m_gyro.getRotation2d());
 
         m_odometry.update(m_gyro.getRotation2d(), leftDistance, rightDistance);
     }
@@ -129,40 +117,17 @@ public class Drivetrain {
         // simulation, and write the simulated positions and velocities to our
         // simulated encoder and gyro. We negate the right side so that positive
         // voltages make the right side move forward.
-        // m_drivetrainSimulator.setInputs(
-        //     m_leftLeader.get() * RobotController.getInputVoltage(),
-        //     -m_rightLeader.get() * RobotController.getInputVoltage());
-        // double voltage = RobotController.getInputVoltage();
-        // this is always 12 volts
-        //System.out.println("voltage="+voltage);
-
-        // this is changing with left joystick
-        // System.out.println(String.format("fLeft: %2.1f, fRight: %2.1f, bLeft: %2.1f, bRight: %2.1f",
-        //     Chassis.fLeft.get(), Chassis.fRight.get(), Chassis.bLeft.get(),Chassis.bRight.get()));
-
-        // m_drivetrainSimulator.setInputs(
-        //     Chassis.fLeft.get() * RobotController.getInputVoltage(),
-        //     -Chassis.fRight.get() * RobotController.getInputVoltage());
-        m_drivetrainSimulator.setInputs(
-            Chassis.fLeft.get() * RobotController.getInputVoltage(),
-            Chassis.fRight.get() * RobotController.getInputVoltage());
+       
+        double lv = -Chassis.fRight.get() * RobotController.getInputVoltage();
+        double rv = -Chassis.fLeft.get() * RobotController.getInputVoltage();
+        m_drivetrainSimulator.setInputs( lv, rv);
         m_drivetrainSimulator.update(0.02);
-
-        // m_leftEncoderSim.setDistance(m_drivetrainSimulator.getLeftPositionMeters());
-        // m_leftEncoderSim.setRate(m_drivetrainSimulator.getLeftVelocityMetersPerSecond());
-        // m_rightEncoderSim.setDistance(m_drivetrainSimulator.getRightPositionMeters());
-        // m_rightEncoderSim.setRate(m_drivetrainSimulator.getRightVelocityMetersPerSecond());
-
-        //this changes when left joystick is moved up and down
-        // System.out.println("angle: " + -m_drivetrainSimulator.getHeading().getDegrees());
-
         m_gyroSim.setAngle(-m_drivetrainSimulator.getHeading().getDegrees());
-        
     }
 
     public void periodic() {
-        updateOdometry();
-        m_fieldSim.setRobotPose(m_odometry.getPoseMeters());
+        // updateOdometry();
+        m_fieldSim.setRobotPose(m_drivetrainSimulator.getPose());
     }
 
 }

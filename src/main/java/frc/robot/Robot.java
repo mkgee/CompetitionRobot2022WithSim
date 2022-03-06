@@ -21,6 +21,8 @@ import frc.diagnostics.*;
 //import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -162,7 +164,7 @@ public class Robot extends TimedRobot implements ControlMap{
     Chassis.reset();
 
     //TODO - update this for autonomis when a trajectory is defined in robotInit()
-    // m_drive.resetOdometry(pose);
+    m_drive.resetOdometry(new Pose2d(2,2, new Rotation2d()));
   }
   /**
    * This function is called periodically during autonomous.
@@ -241,7 +243,11 @@ public class Robot extends TimedRobot implements ControlMap{
     if(joystick - velocity != 0) {
       velocity += (joystick - velocity) / Math.abs(joystick - velocity) * deltaTime / decelTime;
     }
-    if(Math.abs(velocity) < 0.05 && Math.abs(joystick) <= 0.05) {
+
+    // if(Math.abs(velocity) < 0.05 && Math.abs(joystick) <= 0.05) {
+    //   velocity = 0;
+    // }
+    if(Math.abs(velocity) < 0.1 && Math.abs(joystick) <= 0.1) {
       velocity = 0;
     }
 
@@ -311,10 +317,10 @@ public class Robot extends TimedRobot implements ControlMap{
 
   @Override
   public void simulationInit() {
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.fLeft, DCMotor.getNEO(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.fRight, DCMotor.getNEO(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.bLeft, DCMotor.getNEO(1));
-    REVPhysicsSim.getInstance().addSparkMax(Chassis.bRight, DCMotor.getNEO(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fLeft, DCMotor.getCIM(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.fRight, DCMotor.getCIM(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bLeft, DCMotor.getCIM(1));
+    REVPhysicsSim.getInstance().addSparkMax(Chassis.bRight, DCMotor.getCIM(1));
   }
 
   @Override
