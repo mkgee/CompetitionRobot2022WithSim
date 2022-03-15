@@ -6,7 +6,11 @@ import frc.helpers.PneumaticsSystem;
 import frc.parent.*;
 //import frc.raspi.Vision;
 
+import java.util.stream.Stream;
+
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -21,15 +25,19 @@ public class Chassis{
     //These control the main 4 motors on the robot
     public static CCSparkMax fLeft = new CCSparkMax("Front Left", "FL", RobotMap.FORWARD_LEFT, 
         MotorType.kBrushless, IdleMode.kBrake, RobotMap.FORWARD_LEFT_REVERSE, true);
+    public static SparkMaxPIDController fLeftPidController = fLeft.getPIDController();
 
     public static CCSparkMax fRight = new CCSparkMax("Front Right", "FR", RobotMap.FORWARD_RIGHT, 
         MotorType.kBrushless, IdleMode.kBrake, RobotMap.FORWARD_RIGHT_REVERSE, true);
+    public static SparkMaxPIDController fRightPidController = fRight.getPIDController();
 
     public static CCSparkMax bLeft = new CCSparkMax("Back Left", "BL",RobotMap.BACK_LEFT, 
         MotorType.kBrushless, IdleMode.kBrake, RobotMap.BACK_LEFT_REVERSE, true);
+    public static SparkMaxPIDController bLeftPidController = bLeft.getPIDController();
 
     public static CCSparkMax bRight = new CCSparkMax("Back Right", "BR", RobotMap.BACK_RIGHT, 
         MotorType.kBrushless, IdleMode.kBrake, RobotMap.BACK_RIGHT_REVERSE, true);
+    public static SparkMaxPIDController bRightPidController = bRight.getPIDController();
 
     public static PneumaticsSystem shift = new PneumaticsSystem(PneumaticsModuleType.CTREPCM, RobotMap.SHIFT_SOLENOID_ONE, RobotMap.SHIFT_SOLENOID_TWO);
 
@@ -38,7 +46,29 @@ public class Chassis{
 
     public static int autoStep = 0;
 
-    
+    // PID fields
+    private static double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+
+    static {
+        // PID coefficients
+        kP = 6e-5; //8.5; // 6e-5;
+        kI = 0;;
+        kD = 0;
+        kIz = 0;
+        kFF = 0.000015;
+        kMaxOutput = 1;
+        kMinOutput = -1;
+        maxRPM = 5700;
+
+        Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> {
+             pc.setP(kP);
+             pc.setI(kI);
+             pc.setD(kD);
+             pc.setIZone(kIz);
+             pc.setFF(kFF);
+             pc.setOutputRange(kMinOutput, kMaxOutput);
+         });
+    }
 
     //To be used in TeleOP
     //Takes in two axises, most likely the controller axises
@@ -51,7 +81,13 @@ public class Chassis{
         bRight.set(-OI.normalize((yAxis + xAxis), -max, max));
     }
 
-    
+    public static void pidDrive(double yAxis, double xAxis, double max) {
+        fLeftPidController.setReference(-OI.normalize((yAxis - xAxis), -max, max) * maxRPM, ControlType.kVelocity);
+        fRightPidController.setReference(-OI.normalize((yAxis + xAxis), -max, max)* maxRPM, ControlType.kVelocity);
+        bLeftPidController.setReference(-OI.normalize((yAxis - xAxis), -max, max)* maxRPM, ControlType.kVelocity);
+        bRightPidController.setReference(-OI.normalize((yAxis + xAxis), -max, max)* maxRPM, ControlType.kVelocity);
+    }
+
 
     //To be used on Auto/PIDs
     //Simply sets the motor controllers to a certain percent output

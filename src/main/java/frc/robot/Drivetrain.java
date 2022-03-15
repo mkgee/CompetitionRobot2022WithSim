@@ -1,6 +1,6 @@
 package frc.robot;
 
-// import com.revrobotics.RelativeEncoder;
+import com.revrobotics.RelativeEncoder;
 
 // import edu.wpi.first.math.controller.PIDController;
 // import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -30,7 +30,8 @@ public class Drivetrain {
     // private static final double kWheelRadius = 0.0508;
 
     private static final double kWheelRadius = 0.1508; // 6 inches
-    // private static final int kEncoderResolution = -4096;
+    //TODO - need to make this match maxRPM in Chassis.java
+    private static final int kEncoderResolution = -5700;
 
     private final Field2d m_fieldSim = new Field2d();
 
@@ -44,11 +45,16 @@ public class Drivetrain {
     // private final DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
 
     // temp - need a real number!
-    // private final int countsPerRev = 4000;
+    private final int countsPerRev = 4000;
     // private final RelativeEncoder frontLeftEncoder = Chassis.fLeft.getAlternateEncoder(countsPerRev);
     // private final RelativeEncoder frontRightEncoder = Chassis.fRight.getAlternateEncoder(countsPerRev);
     // private final RelativeEncoder backLeftEncoder = Chassis.bLeft.getAlternateEncoder(countsPerRev);
     // private final RelativeEncoder backRightEncoder = Chassis.bRight.getAlternateEncoder(countsPerRev);
+
+    private final RelativeEncoder frontLeftEncoder = Chassis.fLeft.getEncoder();
+    private final RelativeEncoder frontRightEncoder = Chassis.fRight.getEncoder();
+    // private final RelativeEncoder backLeftEncoder = Chassis.bLeft.getEncoder();
+    // private final RelativeEncoder backRightEncoder = Chassis.bRight.getEncoder();
 
     private double mass = 54; // kilograms
     private double momemtOfInertia = 3; //6; // kgmm
@@ -87,9 +93,9 @@ public class Drivetrain {
         //     m_rightPIDController.calculate(m_rightEncoder.getRate(), speeds.rightMetersPerSecond);
 
         // double leftOutput =
-        //     m_leftPIDController.calculate(frontLeftEncoder.getVelocity(), speeds.leftMetersPerSecond);
+        //     Chassis.fLeftPidController.calculate(frontLeftEncoder.getVelocity(), speeds.leftMetersPerSecond);
         // double rightOutput =
-        //     m_rightPIDController.calculate(frontRightEncoder.getVelocity(), speeds.rightMetersPerSecond);
+        //     Chassis.fRightPidController.calculate(frontRightEncoder.getVelocity(), speeds.rightMetersPerSecond);
 
         // this is not changing, the method is not being called.
         // System.out.println("leftOutput=" + leftOutput + ", rightOutput=" + rightOutput);
@@ -107,11 +113,12 @@ public class Drivetrain {
 
     public void updateOdometry() {
         // encoders for CANSparkMax don't work in sim mode!
-        // double leftDistance = frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
-        // double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
+        double leftDistance =  frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
+        double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
 
-        // System.out.println("left position: " + Chassis.fLeft.getEncoder().getPosition());
-        // System.out.println("left position: " + frontLeftEncoder.getPosition());
+        // this number is changing..... for PIDs
+        // System.out.println("left position: " + frontLeftEncoder.getPosition() + ", distance=" + leftDistance);
+        // System.out.println("right position: " + frontRightEncoder.getPosition() + ", distance=" + rightDistance);
 
         // m_odometry.update(m_gyro.getRotation2d(), leftDistance, rightDistance);
     }
@@ -136,16 +143,32 @@ public class Drivetrain {
         // simulated encoder and gyro. We negate the right side so that positive
         // voltages make the right side move forward.
        
-        double lv = -Chassis.fRight.get() * RobotController.getInputVoltage();
-        double rv = -Chassis.fLeft.get() * RobotController.getInputVoltage();
-        m_drivetrainSimulator.setInputs( lv, rv);
+        // noPids
+        if (!Robot.usePIDs) {
+           double lv = -Chassis.fRight.get() * RobotController.getInputVoltage();
+           double rv = -Chassis.fLeft.get() * RobotController.getInputVoltage();
+        //    System.out.println(String.format("lv: %2.2f, rv: %2.2f", lv, rv));
+           m_drivetrainSimulator.setInputs( lv, rv);
+        } else {
+           double lv = -(Chassis.fRight.getEncoder().getVelocity() / 5700.0)* RobotController.getInputVoltage();
+           double rv = -(Chassis.fLeft.getEncoder().getVelocity() / 5700.0)* RobotController.getInputVoltage();
+        //    System.out.println(String.format("lv: %2.2f, rv: %2.2f", lv, rv));
+           m_drivetrainSimulator.setInputs( lv, rv);
+        }
+        // System.out.println(String.format("left vel: %2.2f, right vel: %2.2f", Chassis.fLeft.getEncoder().getVelocity(),
+        //     Chassis.fRight.getEncoder().getVelocity()));
+        
         m_drivetrainSimulator.update(0.02);
         m_gyroSim.setAngle(-m_drivetrainSimulator.getHeading().getDegrees());
     }
 
     public void periodic() {
         updateOdometry();
-        m_fieldSim.setRobotPose(m_drivetrainSimulator.getPose());
+        // if (Robot.usePIDs) {
+        //     m_fieldSim.setRobotPose(m_odometry.getPoseMeters());
+        // } else {
+           m_fieldSim.setRobotPose(m_drivetrainSimulator.getPose());
+        // }
     }
 
 }

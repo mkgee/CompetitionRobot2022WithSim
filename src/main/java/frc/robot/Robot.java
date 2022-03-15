@@ -60,6 +60,8 @@ public class Robot extends TimedRobot implements ControlMap{
 
   // added for sim
   private final Drivetrain m_drive = new Drivetrain();
+
+  public static boolean usePIDs = true;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -255,9 +257,15 @@ public class Robot extends TimedRobot implements ControlMap{
     //debug
     // double rot = OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL);
     // System.out.println("rot: " + rot);
-    Chassis.axisDrive(velocity, OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
 
-    // //dpad up or down to control elevator;;;
+    if (!usePIDs) {
+        Chassis.axisDrive(velocity, OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
+    } else {
+        // for PIDs
+        Chassis.pidDrive(velocity,OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
+    }
+
+    // //dpad up or down to control elevator
     Arms.runElevator((OI.dPad(1, DPAD_DOWN) || OI.dPad(1, DPAD_DOWN_LEFT) || OI.dPad(1, DPAD_DOWN_RIGHT) || 
                       OI.axis(1, L_JOYSTICK_VERTICAL) < -0.5) && !switchPressed,
                      OI.dPad(1, DPAD_UP) || OI.dPad(1, DPAD_UP_LEFT) || OI.dPad(1, DPAD_UP_RIGHT), false, 0.5);

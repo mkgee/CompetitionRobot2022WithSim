@@ -36,12 +36,12 @@
     },
     "windows": {
       "/SmartDashboard/Field": {
-        "image": "C:\\Users\\mitch\\CCHS Robotics 4550\\code\\PathWeaver\\src\\main\\resources\\edu\\wpi\\first\\pathweaver\\2022-field.png",
-        "macImage": "/Users/mitch/Desktop/2022-field.png",
+        "image": "/Users/mitch/Desktop/2022-field.png",
         "window": {
           "visible": true
         },
-        "windowsimage": "/Users/mitch/Desktop/2022-field.png"
+        "windowsimage": "/Users/mitch/Desktop/2022-field.png",
+        "winimage": "C:\\Users\\mitch\\CCHS Robotics 4550\\code\\PathWeaver\\src\\main\\resources\\edu\\wpi\\first\\pathweaver\\2022-field.png"
       }
     }
   }
