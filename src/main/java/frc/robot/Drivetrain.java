@@ -2,17 +2,11 @@ package frc.robot;
 
 import com.revrobotics.RelativeEncoder;
 
-// import edu.wpi.first.math.controller.PIDController;
-// import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-// import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-// import edu.wpi.first.math.numbers.N2;
-// import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
-// import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
@@ -46,18 +40,13 @@ public class Drivetrain {
 
     // temp - need a real number!
     private final int countsPerRev = 4000;
-    // private final RelativeEncoder frontLeftEncoder = Chassis.fLeft.getAlternateEncoder(countsPerRev);
-    // private final RelativeEncoder frontRightEncoder = Chassis.fRight.getAlternateEncoder(countsPerRev);
-    // private final RelativeEncoder backLeftEncoder = Chassis.bLeft.getAlternateEncoder(countsPerRev);
-    // private final RelativeEncoder backRightEncoder = Chassis.bRight.getAlternateEncoder(countsPerRev);
-
+    
     private final RelativeEncoder frontLeftEncoder = Chassis.fLeft.getEncoder();
     private final RelativeEncoder frontRightEncoder = Chassis.fRight.getEncoder();
-    // private final RelativeEncoder backLeftEncoder = Chassis.bLeft.getEncoder();
-    // private final RelativeEncoder backRightEncoder = Chassis.bRight.getEncoder();
 
     private double mass = 54; // kilograms
     private double momemtOfInertia = 3; //6; // kgmm
+
     // private final LinearSystem<N2, N2, N2> m_drivetrainSystem =
     //   LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
     // private final DifferentialDrivetrainSim m_drivetrainSimulator =
@@ -97,9 +86,6 @@ public class Drivetrain {
         // double rightOutput =
         //     Chassis.fRightPidController.calculate(frontRightEncoder.getVelocity(), speeds.rightMetersPerSecond);
 
-        // this is not changing, the method is not being called.
-        // System.out.println("leftOutput=" + leftOutput + ", rightOutput=" + rightOutput);
-
         // m_leftGroup.setVoltage(leftOutput + leftFeedforward);
         // m_rightGroup.setVoltage(rightOutput + rightFeedforward);
 
@@ -113,8 +99,8 @@ public class Drivetrain {
 
     public void updateOdometry() {
         // encoders for CANSparkMax don't work in sim mode!
-        double leftDistance =  frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
-        double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
+        // double leftDistance =  frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
+        // double rightDistance = frontRightEncoder.getPosition() * kWheelRadius * 2 * Math.PI /kEncoderResolution;
 
         // this number is changing..... for PIDs
         // System.out.println("left position: " + frontLeftEncoder.getPosition() + ", distance=" + leftDistance);
@@ -169,6 +155,7 @@ public class Drivetrain {
         // } else {
            m_fieldSim.setRobotPose(m_drivetrainSimulator.getPose());
         // }
+      
     }
 
 }

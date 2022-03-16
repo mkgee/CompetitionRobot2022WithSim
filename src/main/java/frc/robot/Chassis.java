@@ -16,6 +16,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Chassis{
 
@@ -56,8 +57,8 @@ public class Chassis{
         kD = 0;
         kIz = 0;
         kFF = 0.000015;
-        kMaxOutput = 1;
-        kMinOutput = -1;
+        kMaxOutput = 5700; //1;
+        kMinOutput = -5700; //-1;
         maxRPM = 5700;
 
         Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> {
@@ -68,6 +69,14 @@ public class Chassis{
              pc.setFF(kFF);
              pc.setOutputRange(kMinOutput, kMaxOutput);
          });
+
+         SmartDashboard.putNumber("P Gain", kP);
+         SmartDashboard.putNumber("I Gain", kI);
+         SmartDashboard.putNumber("D Gain", kD);
+         SmartDashboard.putNumber("I Zone", kIz);
+         SmartDashboard.putNumber("Feed Forward", kFF);
+         SmartDashboard.putNumber("Max Output", kMaxOutput);
+         SmartDashboard.putNumber("Min Output", kMinOutput);
     }
 
     //To be used in TeleOP
@@ -82,6 +91,54 @@ public class Chassis{
     }
 
     public static void pidDrive(double yAxis, double xAxis, double max) {
+
+        // read PID coefficients from SmartDashboard
+        double p = SmartDashboard.getNumber("P Gain", 0);
+        double i = SmartDashboard.getNumber("I Gain", 0);
+        double d = SmartDashboard.getNumber("D Gain", 0);
+        double iz = SmartDashboard.getNumber("I Zone", 0);
+        double ff = SmartDashboard.getNumber("Feed Forward", 0);
+        double maxOutput = SmartDashboard.getNumber("Max Output", 0);
+        double min = SmartDashboard.getNumber("Min Output", 0);
+
+        // if PID coefficients on SmartDashboard have changed, write new values to controller
+        if((p != kP)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setP(p)
+            );
+            kP = p; 
+        }
+        if((i != kI)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setI(i)
+            );
+            kI = i; 
+        }
+        if((d != kD)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setD(d)
+            );
+            kD = d; 
+        }
+        if((iz != kIz)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setIZone(iz)
+            );
+            kIz = iz; 
+        }
+        if((ff != kFF)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setFF(ff)
+            );
+            kFF = ff; 
+        }
+        if((maxOutput != kMaxOutput) || (min != kMinOutput)) { 
+            Stream.of(Chassis.fLeftPidController, Chassis.fRightPidController, Chassis.bLeftPidController, Chassis.bRightPidController).forEach(pc -> 
+                pc.setOutputRange(min, maxOutput)
+            );
+            kMinOutput = min; 
+            kMaxOutput = maxOutput; 
+        }
         fLeftPidController.setReference(-OI.normalize((yAxis - xAxis), -max, max) * maxRPM, ControlType.kVelocity);
         fRightPidController.setReference(-OI.normalize((yAxis + xAxis), -max, max)* maxRPM, ControlType.kVelocity);
         bLeftPidController.setReference(-OI.normalize((yAxis - xAxis), -max, max)* maxRPM, ControlType.kVelocity);

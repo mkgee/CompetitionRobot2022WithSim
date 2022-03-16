@@ -10,9 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-//import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-//import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.parent.ControlMap;
 import frc.parent.RobotMap;
 import frc.diagnostics.*;
@@ -62,6 +61,11 @@ public class Robot extends TimedRobot implements ControlMap{
   private final Drivetrain m_drive = new Drivetrain();
 
   public static boolean usePIDs = true;
+  private NetworkTableEntry usePIDsEntry = Shuffleboard.getTab("SmartDashboard")
+      .add("Use PIDs", usePIDs)
+      .withWidget(BuiltInWidgets.kToggleSwitch)
+      .getEntry();
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -254,10 +258,7 @@ public class Robot extends TimedRobot implements ControlMap{
       velocity = 0;
     }
 
-    //debug
-    // double rot = OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL);
-    // System.out.println("rot: " + rot);
-
+    usePIDs = usePIDsEntry.getBoolean(usePIDs);
     if (!usePIDs) {
         Chassis.axisDrive(velocity, OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
     } else {
@@ -290,20 +291,6 @@ public class Robot extends TimedRobot implements ControlMap{
     //Fast Mode Toggle (A)
     Chassis.toggleFastMode(OI.button(0, A_BUTTON));
 
-    //added for sim
-    //TODO - start here!
-    /*
-    // Get the x speed. We are inverting this because Xbox controllers return
-    // negative values when we push forward.
-    double xSpeed = -m_speedLimiter.calculate(m_controller.getLeftY()) * Drivetrain.kMaxSpeed;
-
-    // Get the rate of angular rotation. We are inverting this because we want a
-    // positive value when we pull to the left (remember, CCW is positive in
-    // mathematics). Xbox controllers return positive values when you pull to
-    // the right by default.
-    double rot = -m_rotLimiter.calculate(m_controller.getRightX()) * Drivetrain.kMaxAngularSpeed;
-    m_drive.drive(xSpeed, rot);
-    */
   }
 
   /**
