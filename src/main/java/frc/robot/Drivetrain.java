@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.helpers.OI;
+import frc.parent.ControlMap;
 
 public class Drivetrain {
     // 3 meters per second.
@@ -97,6 +99,40 @@ public class Drivetrain {
         setSpeeds(m_kinematics.toWheelSpeeds((new ChassisSpeeds(xSpeed, 0, rot))));
     }
 
+    public double decelTime = .2;
+    public double decelTimeFast = .2;
+    public double decelTimeSlow = .5;
+    public double velocity = 0;
+    public double deltaTime = 0.02;
+
+    public void drive() {
+        
+        // -1 .. 1
+        double joystick = -OI.axis(0, ControlMap.L_JOYSTICK_VERTICAL);
+        // if(Chassis.shift.on()) {
+        //     joystick *= 0.5;
+        // }
+        //Emergency Brake
+        // double decelTime = OI.button(0, ControlMap.LB_BUTTON) ? decelTimeFast : decelTimeSlow;
+        // if(OI.button(0, ControlMap.LB_BUTTON)) {
+        //   joystick = 0;
+        // }
+        //accelerate towards joystick
+        // if(joystick - velocity != 0) {
+        //     velocity += (joystick - velocity) / Math.abs(joystick - velocity) * deltaTime / decelTime;
+        // }
+        velocity = joystick;
+
+        // cancel mid stick instability
+        if(Math.abs(velocity) < 0.1 && Math.abs(joystick) <= 0.1) {
+            velocity = 0;
+        }
+
+        // for PIDs
+        // Chassis.pidDrive(velocity,OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
+        Chassis.pidDrive(velocity,OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.5, 1);
+    }
+
     public void updateOdometry() {
         // encoders for CANSparkMax don't work in sim mode!
         // double leftDistance =  frontLeftEncoder.getPosition() * kWheelRadius * 2 * Math.PI / kEncoderResolution;
@@ -143,7 +179,7 @@ public class Drivetrain {
         }
         // System.out.println(String.format("left vel: %2.2f, right vel: %2.2f", Chassis.fLeft.getEncoder().getVelocity(),
         //     Chassis.fRight.getEncoder().getVelocity()));
-        
+
         m_drivetrainSimulator.update(0.02);
         m_gyroSim.setAngle(-m_drivetrainSimulator.getHeading().getDegrees());
     }

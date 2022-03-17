@@ -263,7 +263,8 @@ public class Robot extends TimedRobot implements ControlMap{
         Chassis.axisDrive(velocity, OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
     } else {
         // for PIDs
-        Chassis.pidDrive(velocity,OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
+        // Chassis.pidDrive(velocity,OI.axis(0, ControlMap.R_JOYSTICK_HORIZONTAL) * 0.75, 1);
+        m_drive.drive();
     }
 
     // //dpad up or down to control elevator
