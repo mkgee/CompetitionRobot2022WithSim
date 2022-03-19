@@ -7,7 +7,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -68,9 +71,15 @@ public class Drivetrain {
     // private final SimpleMotorFeedforward m_feedforward = new SimpleMotorFeedforward(1, 3);
     private final AnalogGyroSim m_gyroSim = new AnalogGyroSim(m_gyro);
     
+    //logging
+    DoubleLogEntry doubleLog;
+    
     public Drivetrain() {
 
         SmartDashboard.putData("Field", m_fieldSim);
+        DataLogManager.start();
+        DataLog log = DataLogManager.getLog();
+        doubleLog = new DoubleLogEntry(log, "/my/double");
     }
 
     // not used
@@ -175,6 +184,7 @@ public class Drivetrain {
            double lv = -(Chassis.fRight.getEncoder().getVelocity() / 5700.0)* RobotController.getInputVoltage();
            double rv = -(Chassis.fLeft.getEncoder().getVelocity() / 5700.0)* RobotController.getInputVoltage();
         //    System.out.println(String.format("lv: %2.2f, rv: %2.2f", lv, rv));
+        //    doubleLog.append(lv);
            m_drivetrainSimulator.setInputs( lv, rv);
         }
         // System.out.println(String.format("left vel: %2.2f, right vel: %2.2f", Chassis.fLeft.getEncoder().getVelocity(),
